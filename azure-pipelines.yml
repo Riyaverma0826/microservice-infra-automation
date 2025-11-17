@@ -1,0 +1,68 @@
+trigger:
+  branches:
+    include:
+      - main
+
+parameters:
+- name: stage
+  displayName: Environment
+  type: string
+  default: dev
+  values:
+    - dev
+    - qa
+    - prod
+
+stages:
+- stage: __default
+  jobs:
+  - job: terraformINITPLAN
+    displayName: Terraform Init & Plan
+    pool:
+      name: CSX-Self hosted
+    steps:
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: 'latest'
+
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/${{ parameters.stage }}'
+        backendServiceArm: 'riya2'
+        backendAzureRmResourceGroupName: 'riya-rg'
+        backendAzureRmStorageAccountName: 'csxstorageinfra'
+        backendAzureRmContainerName: 'tfstate'
+        backendAzureRmKey: '${{ parameters.stage }}.tfstate'
+
+    - task: TerraformTask@5
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/${{ parameters.stage }}'
+        environmentServiceNameAzureRM: 'riya2'
+
+  - job: tfsec
+    displayName: tfsec scan
+    pool:
+      name: CSX-Self hosted
+    dependsOn: terraformINITPLAN
+    steps:
+    - task: tfsec@1
+      inputs:
+        version: 'v1.26.0'
+        dir: '$(System.DefaultWorkingDirectory)/${{ parameters.stage }}'
+
+  - job: ManualValidationJob
+    displayName: "Manual Validation"
+    pool:
+      name: server
+    dependsOn: tfsec
+    steps:
+    - task: ManualValidation@1
+      inputs:
+        notifyUsers: 'kalyaniriyav08@gmail.com'
+        approvers: 'kalyaniriyav08@gmail.com'
+
+  
