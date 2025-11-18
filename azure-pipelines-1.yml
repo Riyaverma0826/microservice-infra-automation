@@ -46,7 +46,7 @@ stages:
   - job: tfsec
     displayName: tfsec scan
     pool:
-      name: CSX-Self hosted
+      name: Azure Pipelines
     dependsOn: terraformINITPLAN
     steps:
     - task: tfsec@1
