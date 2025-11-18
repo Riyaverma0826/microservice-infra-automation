@@ -30,7 +30,7 @@ stages:
         provider: 'azurerm'
         command: 'init'
         workingDirectory: '$(System.DefaultWorkingDirectory)/${{ parameters.stage }}'
-        backendServiceArm: 'riya2'
+        backendServiceArm: 'csx'
         backendAzureRmResourceGroupName: 'riya-rg'
         backendAzureRmStorageAccountName: 'csxstorageinfra'
         backendAzureRmContainerName: 'tfstate'
@@ -41,7 +41,7 @@ stages:
         provider: 'azurerm'
         command: 'plan'
         workingDirectory: '$(System.DefaultWorkingDirectory)/${{ parameters.stage }}'
-        environmentServiceNameAzureRM: 'riya2'
+        environmentServiceNameAzureRM: 'csx'
 
   - job: tfsec
     displayName: tfsec scan
